@@ -1,4 +1,5 @@
 import { GCWorkoutId, GarminDomain } from './types';
+import { GCActivityId } from './types/activity';
 
 export class UrlClass {
     private domain: GarminDomain;
@@ -88,6 +89,15 @@ export class UrlClass {
     }
     get DAILY_HEART_RATE() {
         return `${this.GC_API}/wellness-service/wellness/dailyHeartRate`;
+    }
+    GEAR(userProfilePk: number) {
+        return `${this.GC_API}/gear-service/gear/filterGear?userProfilePk=${userProfilePk}`;
+    }
+    LINK_GEAR(gearUuid: string, activityId: GCActivityId) {
+        return `${this.GC_API}/gear-service/gear/link/${gearUuid}/activity/${activityId}`;
+    }
+    UNLINK_GEAR(gearUuid: string, activityId: GCActivityId) {
+        return `${this.GC_API}/gear-service/gear/unlink/${gearUuid}/activity/${activityId}`;
     }
     WORKOUT(id?: GCWorkoutId) {
         if (id) {

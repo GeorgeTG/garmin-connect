@@ -474,6 +474,42 @@ Retrieves daily heart rate data for a given date.
 const heartRateData = await GCClient.getHeartRate(new Date('2020-03-24'));
 ```
 
+### `getGear(userProfilePk: number): Promise<Gear[]>`
+
+Retrieves all gear for the user.
+
+#### Parameters:
+
+-   `userProfilePk` (number): User profile primary key (from `getUserSettings().id`).
+
+#### Example:
+
+```js
+const settings = await GCClient.getUserSettings();
+const gear = await GCClient.getGear(settings.id);
+```
+
+### `linkGearToActivity(activityId: GCActivityId, gearUuid: string): Promise<Gear>`
+
+Links a gear item to an activity.
+
+#### Example:
+
+```js
+const gear = await GCClient.getGear(settings.id);
+await GCClient.linkGearToActivity(activityId, gear[0].uuid);
+```
+
+### `unlinkGearFromActivity(activityId: GCActivityId, gearUuid: string): Promise<Gear>`
+
+Unlinks a gear item from an activity.
+
+#### Example:
+
+```js
+await GCClient.unlinkGearFromActivity(activityId, gear[0].uuid);
+```
+
 ## Modifying data
 
 ### Update activity is not implemented yet. // TODO: Implement this function

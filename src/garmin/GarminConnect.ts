@@ -11,6 +11,7 @@ import { UrlClass } from './UrlClass';
 import {
     ExportFileTypeValue,
     GCUserHash,
+    Gear,
     GarminDomain,
     ICountActivities,
     IDailyStepsType,
@@ -533,6 +534,30 @@ export default class GarminConnect {
         } catch (error: any) {
             throw new Error(`Error in getHeartRate: ${error.message}`);
         }
+    }
+
+    async getGear(userProfilePk: number): Promise<Gear[]> {
+        return this.client.get<Gear[]>(this.url.GEAR(userProfilePk));
+    }
+
+    async linkGearToActivity(
+        activityId: GCActivityId,
+        gearUuid: string
+    ): Promise<Gear> {
+        return this.client.put<Gear>(
+            this.url.LINK_GEAR(gearUuid, activityId),
+            {}
+        );
+    }
+
+    async unlinkGearFromActivity(
+        activityId: GCActivityId,
+        gearUuid: string
+    ): Promise<Gear> {
+        return this.client.put<Gear>(
+            this.url.UNLINK_GEAR(gearUuid, activityId),
+            {}
+        );
     }
 
     async get<T>(url: string, data?: any) {
