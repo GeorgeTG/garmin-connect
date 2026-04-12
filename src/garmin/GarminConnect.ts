@@ -31,6 +31,10 @@ import {
     toDateString
 } from './common/DateUtils';
 import { SleepData } from './types/sleep';
+import { WeightData, UpdateWeight } from './types/weight';
+import { HeartRate } from './types/heartrate';
+import { HydrationData, WaterIntake } from './types/hydration';
+import { GolfSummary, GolfScorecard } from './types/golf';
 import { gramsToPounds } from './common/WeightUtils';
 import { convertMLToOunces, convertOuncesToML } from './common/HydrationUtils';
 import {
@@ -39,6 +43,17 @@ import {
     GCActivityId,
     IActivity
 } from './types/activity';
+import {
+    IUserSummary,
+    IBodyCompositionData,
+    IHrvData,
+    IStressData,
+    IBodyBatteryData,
+    ISpO2Data,
+    IFitnessAgeData,
+    IEnduranceScoreData,
+    IRespirationData
+} from './types/wellness';
 
 let config: GCCredentials | undefined = undefined;
 
@@ -67,6 +82,7 @@ export interface Session {}
 export default class GarminConnect {
     client: HttpClient;
     private _userHash: GCUserHash | undefined;
+    private _displayName: string | undefined;
     private credentials: GCCredentials;
     private listeners: Listeners;
     private url: UrlClass;
@@ -95,6 +111,22 @@ export default class GarminConnect {
             this.credentials.password
         );
         return this;
+    }
+
+    async resumeWithMfa(mfaCode: string): Promise<GarminConnect> {
+        await this.client.resumeWithMfa(mfaCode);
+        return this;
+    }
+
+    async getDisplayName(): Promise<string> {
+        if (this._displayName) return this._displayName;
+        const profile = await this.getUserProfile();
+        this._displayName = profile.displayName;
+        return this._displayName;
+    }
+
+    setDisplayName(name: string): void {
+        this._displayName = name;
     }
     exportTokenToFile(dirPath: string): void {
         if (!checkIsDirectory(dirPath)) {
@@ -534,6 +566,84 @@ export default class GarminConnect {
             throw new Error(`Error in getHeartRate: ${error.message}`);
         }
     }
+
+    // ─── Wellness API Methods ────────────────────────────────────
+
+    async getUserSummary(date = new Date()): Promise<IUserSummary> {
+        const dateString = toDateString(date);
+        const displayName = await this.getDisplayName();
+        return this.client.get<IUserSummary>(
+            `${this.url.USER_SUMMARY}/${displayName}`,
+            { params: { calendarDate: dateString, _: Date.now() } }
+        );
+    }
+
+    async getBodyComposition(
+        startDate: Date | string,
+        endDate: Date | string
+    ): Promise<IBodyCompositionData> {
+        const start =
+            typeof startDate === 'string' ? startDate : toDateString(startDate);
+        const end =
+            typeof endDate === 'string' ? endDate : toDateString(endDate);
+        return this.client.get<IBodyCompositionData>(
+            this.url.BODY_COMPOSITION,
+            { params: { startDate: start, endDate: end } }
+        );
+    }
+
+    async getHrvData(date = new Date()): Promise<IHrvData> {
+        const dateString = toDateString(date);
+        return this.client.get<IHrvData>(`${this.url.HRV}/${dateString}`);
+    }
+
+    async getStressData(date = new Date()): Promise<IStressData> {
+        const dateString = toDateString(date);
+        return this.client.get<IStressData>(
+            `${this.url.DAILY_STRESS}/${dateString}`
+        );
+    }
+
+    async getBodyBattery(
+        startDate: Date | string,
+        endDate: Date | string
+    ): Promise<IBodyBatteryData[]> {
+        const start =
+            typeof startDate === 'string' ? startDate : toDateString(startDate);
+        const end =
+            typeof endDate === 'string' ? endDate : toDateString(endDate);
+        return this.client.get<IBodyBatteryData[]>(this.url.BODY_BATTERY, {
+            params: { startDate: start, endDate: end }
+        });
+    }
+
+    async getSpO2Data(date = new Date()): Promise<ISpO2Data> {
+        const dateString = toDateString(date);
+        return this.client.get<ISpO2Data>(`${this.url.SPO2}/${dateString}`);
+    }
+
+    async getFitnessAge(date = new Date()): Promise<IFitnessAgeData> {
+        const dateString = toDateString(date);
+        return this.client.get<IFitnessAgeData>(
+            `${this.url.FITNESS_AGE}/${dateString}`
+        );
+    }
+
+    async getEnduranceScore(date = new Date()): Promise<IEnduranceScoreData> {
+        const dateString = toDateString(date);
+        return this.client.get<IEnduranceScoreData>(
+            `${this.url.ENDURANCE_SCORE}/${dateString}`
+        );
+    }
+
+    async getRespirationData(date = new Date()): Promise<IRespirationData> {
+        const dateString = toDateString(date);
+        return this.client.get<IRespirationData>(
+            `${this.url.RESPIRATION}/${dateString}`
+        );
+    }
+
+    // ─── Generic Methods ─────────────────────────────────────────
 
     async get<T>(url: string, data?: any) {
         const response = await this.client.get(url, data);

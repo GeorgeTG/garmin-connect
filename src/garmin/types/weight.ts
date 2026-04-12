@@ -1,6 +1,6 @@
 // weight-service/weight/dayview/2023-12-28
 
-interface DateWeight {
+export interface DateWeight {
     samplePk: number;
     date: number;
     calendarDate: string;
@@ -18,7 +18,7 @@ interface DateWeight {
     weightDelta: number;
 }
 
-interface TotalAverage {
+export interface TotalAverage {
     from: number;
     until: number;
     weight: number;
@@ -32,14 +32,14 @@ interface TotalAverage {
     metabolicAge: number | null;
 }
 
-interface WeightData {
+export interface WeightData {
     startDate: string;
     endDate: string;
     dateWeightList: DateWeight[];
     totalAverage: TotalAverage;
 }
 
-interface UpdateWeight {
+export interface UpdateWeight {
     dateTimestamp: string; // Format: "2023-12-31T12:39:00.00"
     gmtTimestamp: string; // Format: "2023-12-31T20:39:00.00"
     unitKey: string; // Example: "lbs"

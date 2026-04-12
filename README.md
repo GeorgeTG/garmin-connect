@@ -1,6 +1,6 @@
 # garmin-connect
 
-## v1.6.0 refactor
+## v1.9.0
 
 TODO:
 
@@ -12,7 +12,7 @@ TODO:
 -   [x] Download Activity, countActivities, getActivities, getActivity, getUserProfile, getUserSettings
 -   [x] Upload Activity, delete Activity
 -   [ ] Implementation of other methods, such as Badge,Workout,Gear etc
--   [ ] Handle MFA
+-   [x] Handle MFA
 -   [x] Handle Account locked
 -   [ ] Unit test
 -   [ ] Listeners
@@ -472,6 +472,149 @@ Retrieves daily heart rate data for a given date.
 
 ```js
 const heartRateData = await GCClient.getHeartRate(new Date('2020-03-24'));
+```
+
+## Wellness API
+
+### `getUserSummary(date?: Date): Promise<IUserSummary>`
+
+Retrieves the daily user summary including steps, calories, active time, stress, and more.
+
+#### Parameters:
+
+-   `date` (Date, optional): Date of the summary requested; defaults to today.
+
+#### Example:
+
+```js
+const summary = await GCClient.getUserSummary(new Date('2024-01-15'));
+// summary.totalSteps, summary.activeKilocalories, summary.averageStressLevel, etc.
+```
+
+---
+
+### `getBodyComposition(startDate: Date | string, endDate: Date | string): Promise<IBodyCompositionData>`
+
+Retrieves body composition data (weight, BMI, body fat, muscle mass, etc.) for a date range.
+
+#### Example:
+
+```js
+const bodyComp = await GCClient.getBodyComposition('2024-01-01', '2024-01-31');
+```
+
+---
+
+### `getHrvData(date?: Date): Promise<IHrvData>`
+
+Retrieves Heart Rate Variability (HRV) data for a given date.
+
+#### Example:
+
+```js
+const hrv = await GCClient.getHrvData(new Date('2024-01-15'));
+// hrv.hrvSummary.lastNight, hrv.hrvSummary.weeklyAvg, etc.
+```
+
+---
+
+### `getStressData(date?: Date): Promise<IStressData>`
+
+Retrieves daily stress data for a given date.
+
+#### Example:
+
+```js
+const stress = await GCClient.getStressData(new Date('2024-01-15'));
+// stress.overallStressLevel, stress.restStressPercentage, etc.
+```
+
+---
+
+### `getBodyBattery(startDate: Date | string, endDate: Date | string): Promise<IBodyBatteryData[]>`
+
+Retrieves Body Battery energy levels for a date range.
+
+#### Example:
+
+```js
+const battery = await GCClient.getBodyBattery('2024-01-01', '2024-01-07');
+// battery[0].charged, battery[0].drained, etc.
+```
+
+---
+
+### `getSpO2Data(date?: Date): Promise<ISpO2Data>`
+
+Retrieves blood oxygen saturation (SpO2) data for a given date.
+
+#### Example:
+
+```js
+const spo2 = await GCClient.getSpO2Data(new Date('2024-01-15'));
+```
+
+---
+
+### `getFitnessAge(date?: Date): Promise<IFitnessAgeData>`
+
+Retrieves fitness age data for a given date.
+
+#### Example:
+
+```js
+const fitnessAge = await GCClient.getFitnessAge(new Date('2024-01-15'));
+```
+
+---
+
+### `getEnduranceScore(date?: Date): Promise<IEnduranceScoreData>`
+
+Retrieves endurance score data for a given date.
+
+#### Example:
+
+```js
+const endurance = await GCClient.getEnduranceScore(new Date('2024-01-15'));
+```
+
+---
+
+### `getRespirationData(date?: Date): Promise<IRespirationData>`
+
+Retrieves respiration rate data for a given date.
+
+#### Example:
+
+```js
+const respiration = await GCClient.getRespirationData(new Date('2024-01-15'));
+```
+
+---
+
+## MFA (Multi-Factor Authentication)
+
+If your Garmin account has MFA enabled, `login()` will throw a `GarminMfaRequiredError`. Catch it and call `resumeWithMfa()` with the verification code.
+
+```js
+import { GarminConnect, GarminMfaRequiredError } from 'garmin-connect';
+
+const GCClient = new GarminConnect({
+    username: 'my.email@example.com',
+    password: 'MySecretPassword'
+});
+
+try {
+    await GCClient.login();
+} catch (err) {
+    if (err instanceof GarminMfaRequiredError) {
+        // Prompt user for the 6-digit code from their authenticator app
+        const mfaCode = '123456';
+        await GCClient.resumeWithMfa(mfaCode);
+    } else {
+        throw err;
+    }
+}
 ```
 
 ## Modifying data

@@ -1,1 +1,11 @@
 export { default as GarminConnect } from './garmin/GarminConnect';
+export type { GCCredentials, Event, Session } from './garmin/GarminConnect';
+export { GarminMfaRequiredError } from './common/HttpClient';
+export type { MfaLoginState } from './common/HttpClient';
+export * from './garmin/types';
+export * from './garmin/types/wellness';
+export * from './garmin/types/activity';
+export * from './garmin/types/sleep';
+export * from './garmin/types/weight';
+export * from './garmin/types/heartrate';
+export * from './garmin/types/hydration';
