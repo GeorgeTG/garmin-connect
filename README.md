@@ -474,6 +474,40 @@ Retrieves daily heart rate data for a given date.
 const heartRateData = await GCClient.getHeartRate(new Date('2020-03-24'));
 ```
 
+### `getBadgesEarned(): Promise<IBadge[]>`
+
+Retrieves a list of all badges earned by the user.
+
+#### Example:
+
+```js
+const badges = await GCClient.getBadgesEarned();
+```
+
+### `getBadgesAvailable(): Promise<IBadge[]>`
+
+Retrieves a list of all available badges.
+
+#### Example:
+
+```js
+const availableBadges = await GCClient.getBadgesAvailable();
+```
+
+### `getBadgeDetail(badgeId: number): Promise<IBadge>`
+
+Retrieves details for a specific badge.
+
+#### Parameters:
+
+-   `badgeId` (number): Identifier for the desired badge.
+
+#### Example:
+
+```js
+const badge = await GCClient.getBadgeDetail(123);
+```
+
 ## Modifying data
 
 ### Update activity is not implemented yet. // TODO: Implement this function

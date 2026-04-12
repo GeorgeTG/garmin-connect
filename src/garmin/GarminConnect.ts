@@ -10,8 +10,10 @@ import { checkIsDirectory, createDirectory, writeToFile } from '../utils';
 import { UrlClass } from './UrlClass';
 import {
     ExportFileTypeValue,
+    GCBadgeId,
     GCUserHash,
     GarminDomain,
+    IBadge,
     ICountActivities,
     IDailyStepsType,
     IGarminTokens,
@@ -533,6 +535,19 @@ export default class GarminConnect {
         } catch (error: any) {
             throw new Error(`Error in getHeartRate: ${error.message}`);
         }
+    }
+
+    async getBadgesEarned(): Promise<IBadge[]> {
+        return this.client.get<IBadge[]>(this.url.BADGES_EARNED);
+    }
+
+    async getBadgesAvailable(): Promise<IBadge[]> {
+        return this.client.get<IBadge[]>(this.url.BADGES_AVAILABLE);
+    }
+
+    async getBadgeDetail(badgeId: GCBadgeId): Promise<IBadge> {
+        if (!badgeId) throw new Error('Missing badgeId');
+        return this.client.get<IBadge>(this.url.BADGE_DETAIL(badgeId));
     }
 
     async get<T>(url: string, data?: any) {

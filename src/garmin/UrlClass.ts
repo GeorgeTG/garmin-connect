@@ -1,4 +1,4 @@
-import { GCWorkoutId, GarminDomain } from './types';
+import { GCBadgeId, GCWorkoutId, GarminDomain } from './types';
 
 export class UrlClass {
     private domain: GarminDomain;
@@ -88,6 +88,15 @@ export class UrlClass {
     }
     get DAILY_HEART_RATE() {
         return `${this.GC_API}/wellness-service/wellness/dailyHeartRate`;
+    }
+    get BADGES_EARNED() {
+        return `${this.GC_API}/badge-service/badge/earned`;
+    }
+    get BADGES_AVAILABLE() {
+        return `${this.GC_API}/badge-service/badge/available`;
+    }
+    BADGE_DETAIL(id: GCBadgeId) {
+        return `${this.GC_API}/badge-service/badge/detail/v2/${id}`;
     }
     WORKOUT(id?: GCWorkoutId) {
         if (id) {
