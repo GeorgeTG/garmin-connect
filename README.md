@@ -604,7 +604,9 @@ try {
 
 ## Modifying data
 
-### Update activity is not implemented yet. // TODO: Implement this function
+### `updateActivity(activity: IActivity): Promise<IActivity>`
+
+Updates an existing activity.
 
 ```js
 const activities = await GCClient.getActivities(0, 1);
