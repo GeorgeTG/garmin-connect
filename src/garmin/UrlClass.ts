@@ -89,6 +89,33 @@ export class UrlClass {
     get DAILY_HEART_RATE() {
         return `${this.GC_API}/wellness-service/wellness/dailyHeartRate`;
     }
+    get USER_SUMMARY() {
+        return `${this.GC_API}/usersummary-service/usersummary/daily`;
+    }
+    get BODY_COMPOSITION() {
+        return `${this.GC_API}/weight-service/weight/dateRange`;
+    }
+    get HRV() {
+        return `${this.GC_API}/hrv-service/hrv`;
+    }
+    get DAILY_STRESS() {
+        return `${this.GC_API}/wellness-service/wellness/dailyStress`;
+    }
+    get BODY_BATTERY() {
+        return `${this.GC_API}/wellness-service/wellness/bodyBattery/reports/daily`;
+    }
+    get SPO2() {
+        return `${this.GC_API}/wellness-service/wellness/daily/spo2`;
+    }
+    get FITNESS_AGE() {
+        return `${this.GC_API}/fitnessage-service/fitnessage`;
+    }
+    get ENDURANCE_SCORE() {
+        return `${this.GC_API}/metrics-service/metrics/endurancescore`;
+    }
+    get RESPIRATION() {
+        return `${this.GC_API}/wellness-service/wellness/daily/respiration`;
+    }
     WORKOUT(id?: GCWorkoutId) {
         if (id) {
             return `${this.GC_API}/workout-service/workout/${id}`;

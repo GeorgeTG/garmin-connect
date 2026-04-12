@@ -16,12 +16,13 @@ import {
     IOauth1Token,
     IOauth2Token
 } from '../garmin/types';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 const CSRF_RE = new RegExp('name="_csrf"\\s+value="(.+?)"');
 const TICKET_RE = new RegExp('ticket=([^"]+)"');
 const ACCOUNT_LOCKED_RE = new RegExp('var statuss*=s*"([^"]*)"');
 const PAGE_TITLE_RE = new RegExp('<title>([^<]*)</title>');
+const MFA_TICKET_RE = new RegExp('ticket=([^"]+)"');
 
 const USER_AGENT_CONNECTMOBILE = 'com.garmin.android.apps.connectmobile';
 const USER_AGENT_BROWSER =
@@ -33,12 +34,26 @@ const OAUTH_CONSUMER_URL =
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
+export class GarminMfaRequiredError extends Error {
+    constructor(public readonly loginState: MfaLoginState) {
+        super('MFA verification required');
+        this.name = 'GarminMfaRequiredError';
+    }
+}
+
+export interface MfaLoginState {
+    csrf: string;
+    signinUrl: string;
+    cookies: string[];
+}
+
 export class HttpClient {
     client: AxiosInstance;
     url: UrlClass;
     oauth1Token: IOauth1Token | undefined;
     oauth2Token: IOauth2Token | undefined;
     OAUTH_CONSUMER: IOauth1Consumer | undefined;
+    private _mfaLoginState: MfaLoginState | undefined;
 
     constructor(url: UrlClass) {
         this.url = url;
@@ -178,16 +193,62 @@ export class HttpClient {
      * @param username
      * @param password
      * @returns {Promise<HttpClient>}
+     * @throws {GarminMfaRequiredError} When MFA is required — call resumeWithMfa() after
      */
     async login(username: string, password: string): Promise<HttpClient> {
         await this.fetchOauthConsumer();
-        // Step1-3: Get ticket from page.
+        // Step1-3: Get ticket from page (may throw GarminMfaRequiredError)
         const ticket = await this.getLoginTicket(username, password);
         // Step4: Oauth1
         const oauth1 = await this.getOauth1Token(ticket);
-        // TODO: Handle MFA
-
         // Step 5: Oauth2
+        await this.exchange(oauth1);
+        return this;
+    }
+
+    /**
+     * Resume login after MFA verification
+     * @param mfaCode The 6-digit MFA code from authenticator app
+     * @returns {Promise<HttpClient>}
+     */
+    async resumeWithMfa(mfaCode: string): Promise<HttpClient> {
+        if (!this._mfaLoginState) {
+            throw new Error('No MFA login state — call login() first');
+        }
+        if (!this.OAUTH_CONSUMER) {
+            await this.fetchOauthConsumer();
+        }
+
+        const { csrf, signinUrl } = this._mfaLoginState;
+
+        // Submit MFA verification code
+        const mfaForm = new FormData();
+        mfaForm.append('mfa-code', mfaCode);
+        mfaForm.append('embed', 'true');
+        mfaForm.append('_csrf', csrf);
+        mfaForm.append('fromPage', 'setupEnterMfaCode');
+
+        const mfaResult = await this.post<string>(signinUrl, mfaForm, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Dnt: 1,
+                Origin: this.url.GARMIN_SSO_ORIGIN,
+                Referer: signinUrl,
+                'User-Agent': USER_AGENT_BROWSER
+            }
+        });
+
+        const ticketRegResult = TICKET_RE.exec(mfaResult);
+        if (!ticketRegResult) {
+            throw new Error(
+                'MFA verification failed — invalid code or expired session'
+            );
+        }
+        const ticket = ticketRegResult[1];
+        this._mfaLoginState = undefined;
+
+        // Continue normal OAuth flow
+        const oauth1 = await this.getOauth1Token(ticket);
         await this.exchange(oauth1);
         return this;
     }
@@ -269,8 +330,27 @@ export class HttpClient {
         return ticket;
     }
 
-    // TODO: Handle MFA
-    handleMFA(htmlStr: string): void {}
+    handleMFA(htmlStr: string): void {
+        // Detect MFA challenge page — Garmin shows a page with "Verify Your Identity"
+        // or "Enter MFA Code" when 2FA is enabled
+        if (
+            htmlStr.includes('verifyMFA') ||
+            htmlStr.includes('setupEnterMfaCode') ||
+            htmlStr.includes('mfa-code')
+        ) {
+            // Extract CSRF token from MFA page
+            const csrfMatch = CSRF_RE.exec(htmlStr);
+            const csrf = csrfMatch ? csrfMatch[1] : '';
+
+            this._mfaLoginState = {
+                csrf,
+                signinUrl: `${this.url.SIGNIN_URL}`,
+                cookies: []
+            };
+
+            throw new GarminMfaRequiredError(this._mfaLoginState);
+        }
+    }
 
     // TODO: Handle Phone number
     handlePageTitle(htmlStr: string): void {
