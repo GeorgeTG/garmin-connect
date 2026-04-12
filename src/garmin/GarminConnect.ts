@@ -12,6 +12,7 @@ import {
     ExportFileTypeValue,
     GCBadgeId,
     GCUserHash,
+    Gear,
     GarminDomain,
     IBadge,
     ICountActivities,
@@ -658,6 +659,32 @@ export default class GarminConnect {
     async getBadgeDetail(badgeId: GCBadgeId): Promise<IBadge> {
         if (!badgeId) throw new Error('Missing badgeId');
         return this.client.get<IBadge>(this.url.BADGE_DETAIL(badgeId));
+    }
+
+    // ─── Gear Methods ────────────────────────────────────────────
+
+    async getGear(userProfilePk: number): Promise<Gear[]> {
+        return this.client.get<Gear[]>(this.url.GEAR(userProfilePk));
+    }
+
+    async linkGearToActivity(
+        activityId: GCActivityId,
+        gearUuid: string
+    ): Promise<Gear> {
+        return this.client.put<Gear>(
+            this.url.LINK_GEAR(gearUuid, activityId),
+            {}
+        );
+    }
+
+    async unlinkGearFromActivity(
+        activityId: GCActivityId,
+        gearUuid: string
+    ): Promise<Gear> {
+        return this.client.put<Gear>(
+            this.url.UNLINK_GEAR(gearUuid, activityId),
+            {}
+        );
     }
 
     // ─── Generic Methods ─────────────────────────────────────────

@@ -1,4 +1,5 @@
 import { GCBadgeId, GCWorkoutId, GarminDomain } from './types';
+import { GCActivityId } from './types/activity';
 
 export class UrlClass {
     private domain: GarminDomain;
@@ -124,6 +125,15 @@ export class UrlClass {
     }
     BADGE_DETAIL(id: GCBadgeId) {
         return `${this.GC_API}/badge-service/badge/detail/v2/${id}`;
+    }
+    GEAR(userProfilePk: number) {
+        return `${this.GC_API}/gear-service/gear/filterGear?userProfilePk=${userProfilePk}`;
+    }
+    LINK_GEAR(gearUuid: string, activityId: GCActivityId) {
+        return `${this.GC_API}/gear-service/gear/link/${gearUuid}/activity/${activityId}`;
+    }
+    UNLINK_GEAR(gearUuid: string, activityId: GCActivityId) {
+        return `${this.GC_API}/gear-service/gear/unlink/${gearUuid}/activity/${activityId}`;
     }
     WORKOUT(id?: GCWorkoutId) {
         if (id) {
