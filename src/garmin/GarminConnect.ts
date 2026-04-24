@@ -209,6 +209,36 @@ export default class GarminConnect {
         );
     }
 
+    /**
+     * Strength training: exercise sets (reps, weight, muscle category,
+     * probable/detected exercise). Shape is returned as `unknown` until
+     * we finalize the typed interface — capture a real response with
+     * GARMIN_DEBUG=1 to inform the types.
+     */
+    async getActivityExerciseSets(activityId: GCActivityId): Promise<unknown> {
+        if (!activityId) throw new Error('Missing activityId');
+        return this.client.get<unknown>(
+            this.url.ACTIVITY_EXERCISE_SETS(activityId)
+        );
+    }
+
+    /**
+     * Full activity details DTO (splits, metrics, samples). For strength
+     * activities, includes per-set breakdown.
+     */
+    async getActivityDetails(activityId: GCActivityId): Promise<unknown> {
+        if (!activityId) throw new Error('Missing activityId');
+        return this.client.get<unknown>(this.url.ACTIVITY_DETAILS(activityId));
+    }
+
+    /**
+     * Per-split data. In strength training, each split corresponds to a set.
+     */
+    async getActivitySplits(activityId: GCActivityId): Promise<unknown> {
+        if (!activityId) throw new Error('Missing activityId');
+        return this.client.get<unknown>(this.url.ACTIVITY_SPLITS(activityId));
+    }
+
     async countActivities(): Promise<ICountActivities> {
         return this.client.get<ICountActivities>(this.url.STAT_ACTIVITIES, {
             params: {
