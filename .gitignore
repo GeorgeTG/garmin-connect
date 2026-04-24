@@ -27,5 +27,8 @@ garmin.config.json
 # debug dumps
 .garmin-debug/
 
+# Claude Code local settings
+.claude/
+
 # tests
 test
